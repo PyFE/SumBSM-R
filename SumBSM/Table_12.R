@@ -55,6 +55,7 @@ rv456$call <- rv456$call * c(1.9,2.0,2.1)
   
 # Case 7
 # Notice t.obs2 and wts2 since T=2
+# The price is slightly different (closer to the exact value) becaues I was not using CV (CV=F) for Table 12 by mistake.
 rv7 <- blksmd_asian( 2, 2, t.obs2, vol, wts=wts2, r=r, detail=F, CV=T )
 
 # Exact value from Linetsky (2004)
