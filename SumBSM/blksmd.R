@@ -42,8 +42,30 @@ blksmd_asian_pca <- function( n = 12 ){
   return(rv)
 }
 
-blksmd_basket <- function( strk, spot, t.exp, vol, wts=1/length(vol), corr=0, 
-                           r = 0, d = 0, lambda = 3, n.quad = NA, uniform = FALSE, detail = FALSE, CV = FALSE, callput = TRUE ){
+#' Main pricing function for spread and basket options
+#' 
+#' @param strk strike prices (array)
+#' @param spot spot prices (array)
+#' @param t.exp time to expiry
+#' @param vol volatilities (array)
+#' @param corr correlation matrix between assets
+#' @param r interest rate
+#' @param d dividend rate
+#' @param lambda parameter to determin quadrature size
+#' @param n.quad if given, ignore lambda and force the given quadrature sizes
+#' @param uniform if TRUE, use equally-distanced dense grid instead of quadrature.
+#' Computationally heavy. Used only for validation purpose. 
+#' @param detail return more information if TRUE
+#' @param CV use control-variate using deta if TRUE
+#' @param callput call/put for TRUE/FALSE
+#' 
+#' @return option prices for given strike prices (array)
+#' 
+#' @references Choi, J. (2018). Sum of all Black-Scholes-Merton models: An efficient 
+#' pricing method for spread, basket, and Asian options. Journal of Futures Markets, 
+#' 38(6), 627–644. https://doi.org/10.1002/fut.21909
+blksmd_basket <- function( strk, spot, t.exp, vol, wts=1/length(vol), corr = 0, 
+                           r = 0, d = 0, lambda = 3, n.quad = NA, uniform = F, detail = F, CV = T, callput = T ){
   
   n.var <- length(wts)
   fwd.wts <- exp((r-d)*t.exp)*spot*wts
@@ -197,8 +219,26 @@ blksmd_basket <- function( strk, spot, t.exp, vol, wts=1/length(vol), corr=0,
   return(ret)
 }
 
+#' Main pricing function for Asian options
+#' 
+#' @param strk strike prices (array)
+#' @param spot spot prices (array)
+#' @param t.obs observation time (array). The last value is the expiry.
+#' @param vol volatility
+#' @param wts weights
+#' @param r interest rate
+#' @param d dividend rate
+#' @param CV use control-variate using deta if TRUE
+#' @param callput call/put for TRUE/FALSE
+#' @param detail return more information if TRUE
+#' 
+#' @return option prices for given strike prices (array)
+#' 
+#' @references Choi, J. (2018). Sum of all Black-Scholes-Merton models: An efficient 
+#' pricing method for spread, basket, and Asian options. Journal of Futures Markets, 
+#' 38(6), 627–644. https://doi.org/10.1002/fut.21909
 blksmd_asian <- function( strk, spot, t.obs, vol, wts=1/length(t.obs), r = 0, d = 0, 
-                          CV = FALSE, callput = TRUE, detail = FALSE ){
+                          CV = T, callput = T, detail = F ){
   
   n.obs <- length(t.obs)
   fwd.wts <- exp((r-d)*t.obs)*spot*wts
@@ -307,10 +347,14 @@ blksmd_asian <- function( strk, spot, t.obs, vol, wts=1/length(t.obs), r = 0, d 
   return(ret)
 }
 
-##################################################################
-# Margrabe's exchange option formula (Spread Opt with K=0)
-##################################################################
 
+#' Margrabe's exchange option formula (Spread Opt with K=0)
+#'
+#' @param spot two spot prices as an array
+#' @param t.exp time to expiry
+#' @param vol volatility
+#' @param rho correlation
+#' @param d dividend rate
 blksmd_margrabe <- function( spot, t.exp, vol, rho, d = 0 ){
   # S1 - S2 >= 0
   std <- sqrt(sum(vol*vol)-2*rho*prod(vol))*sqrt(t.exp)
@@ -321,7 +365,11 @@ blksmd_margrabe <- function( spot, t.exp, vol, rho, d = 0 ){
   return(call)
 }
 
-# Method by Bjerksund & Stensland Quantitative Finance (2014)
+#' Spread option pricing method by Bjerksund & Stensland (2014)
+#' Implemented for performance comparison. 
+#' 
+#' @references Bjerksund, P., & Stensland, G. (2014). Closed form spread option valuation. 
+#' Quantitative Finance, 14(10), 1785–1794.
 blksmd_bjerkspread <- function( strk, spot, t.exp, vol, rho, r = 0, d = 0 ){
   call <- rep(NA, length(strk))
   fwd <- spot * exp((r-d)*t.exp)
@@ -346,7 +394,14 @@ blksmd_bjerkspread <- function( strk, spot, t.exp, vol, rho, r = 0, d = 0 ){
   return(exp(-r*t.exp)*call)
 }
 
-blksmd_splittingpread <- function( strk, spot, t.exp, vol, rho, r = 0, d = c(0,0), Kirk = FALSE ){
+#' Spread option pricing method by Lo. (2015) Strang's splitting approximation I
+#' Implemented for performance comparison. 
+#' 
+#' @param Kirk if TRUE, return Kirk's spread option formula
+#' 
+#' @references Lo, C.-F. (2015). Pricing Spread Options by the Operator Splitting 
+#' Method. Wilmott, 2015(September), 64–67. https://doi.org/10.1002/wilm.10449
+blksmd_splittingpread <- function( strk, spot, t.exp, vol, rho, r = 0, d = c(0,0), Kirk = F ){
   call <- rep(NA, length(strk))
   fwd <- spot * exp((r-d)*t.exp)
   std <- vol*sqrt(t.exp)
@@ -373,10 +428,11 @@ blksmd_splittingpread <- function( strk, spot, t.exp, vol, rho, r = 0, d = c(0,0
   return(exp(-r*t.exp)*call)
 }
 
-##################################################################
-# Method by Li Deng Zhou wiht y0 = 0
-##################################################################
-
+#' Spread option pricing method by Li Deng Zhou wiht y0 = 0
+#' Implemented for performance comparison. 
+#' 
+#' @references Li, M., Deng, S., & Zhou, J. (2008). Closed-Form Approximations 
+#' for Spread Option Prices and Greeks. The Journal of Derivatives, 15(3), 58–80.
 blksmd_CalcSpreadOptLDZ <- function( strk, spot, t.exp, vol, rho, r = 0, d = 0 ){
   call <- rep(NA, length(strk))
   fwd <- spot * exp((r-d)*t.exp)
@@ -409,6 +465,8 @@ blksmd_CalcSpreadOptLDZ <- function( strk, spot, t.exp, vol, rho, r = 0, d = 0 )
   return(exp(-r*t.exp)*price.fwd)
 }
 
+#' An auxiliry function used by blksmd_CalcSpreadOptLDZ
+#' 
 blksmd_CalcSpreadOptLDZ_I <- function( u, v, eps ) {
   u2 <- u*u
   u4 <- u2*u2
@@ -425,20 +483,10 @@ blksmd_CalcSpreadOptLDZ_I <- function( u, v, eps ) {
   return( J0 + eps*(J1 + 0.5*eps*J2))
 }
 
-##########################################
-# obsolete function 
-# Householder reflection is much cheaper
-##########################################
-blksmd_unitary_u1 <- function( u1 ) {
-  A <- diag(length(u1))
-  idx <- which.max(abs(u1))
-  A[,idx] <- A[,1]
-  A[,1] <- u1 / sqrt(as.vector(crossprod(u1)))
-  qrStat <- qr(A)
-  Q <- qrStat$qr[1,1] * qr.Q(qrStat)
-  return( Q )
-}
 
+#' Houseohlder reflection
+#' 
+#' @param u1 an input vector
 blksmd_householder <- function( u1 ) {
   #returns a Householder reflection (orthonormal matrix) which maps e1 into the normalized u1
   v <- u1/sqrt(sum(u1*u1))
@@ -573,11 +621,16 @@ root_guess <- function(f, a, K, x.guess) {
   }
 }
 
-###########################################################
-# Multi-variate black-scholes price for given the root
-# int( f*exp(a*z-0.5*a^2) - K ) z from root (= -d) to +inf
-#
-###########################################################
+#' Multi-variate black-scholes price for a given the root
+#' int( f*exp(a*z-0.5*a^2) - K ) z from root (= -d) to +inf
+#'
+#' @param f 
+#' @param a
+#' @param K
+#' @param root
+#' @param callput
+#' 
+#' @return option price
 blks_N <- function(f, a, K, root, callput = TRUE){
   a.ext <- c(0.0, a)
   f.ext <- c(-K, f)
@@ -590,51 +643,17 @@ blks_N <- function(f, a, K, root, callput = TRUE){
   return(rv)
 }
 
-###########################################################
-# Return the factor matrix for spread option 
-# The first column is ( x, -x )
-###########################################################
-
-blksmd_2by2_factormat <- function( covar = NA, A = NA, B = NA, C = NA, direction = -1 ) {
-  if( !is.na( covar )) {
-    A <- covar[1,1]
-    B <- covar[1,2]
-    C <- covar[2,2]
-  }
-
-  det <- A*C-B*B
-  if( det<=0 ) {
-    stop( 'Matrix is not possitive definite, returning NA')
-  }
-
-  det.sqrt <- sqrt( det )
-
-  #chol2 <- matrix( c(sqrt(A), B/sqrt(A), 0, sqrt(C-B*B/A)), ncol=2 )
-  #a <- sqrt(A*C-B*B)/sqrt(A*A+A*C+2*A*B)
-  #b <- (A+B)/sqrt(A*A+A*C+2*A*B)
-  #Q <- matrix( c(a,-b,b,a), ncol=2 )
-
-  if( direction < 0 ) {
-    # the values in the first column have oppisite signs (for spread option)
-    cholV <- matrix( c(det.sqrt, -det.sqrt, 
-                       (A+B), (B+C) )/sqrt(A+2*B+C), ncol=2 )
-  } else {
-    # the values in the first column have same signs (for basket option)
-    cholV <- matrix( c(det.sqrt, det.sqrt, 
-                       (B-A), (C-B) )/sqrt(A-2*B+C), ncol=2 )
-  }
-
-  #validity check
-  if( sum( ( err <- c(A,B,B,C)-as.vector(cholV %*% t(cholV)) ) * err ) > 1e-12 ) {
-    stop('computed factor matrix can not reproduce the variance matrix. check the value')
-  }
-
-  return( cholV )
-}
-
-###########################################################
-# Spread option without numerical root finding
-###########################################################
+#' Spread option without numerical root finding
+#' 
+#' @param strk strike price (array)
+#' @param spot two spot prices
+#' @param t.exp time to expiry
+#' @param vol two volatilities
+#' @param rho correlation between the two assets
+#' @param r interest rate
+#' @param d dividend rate
+#' @param n.quad the quadrature size
+#' @return spread option price (array)
 blksmd_spreadquick <- function( strk, spot, t.exp, vol, rho, r = 0, d = 0, n.quad = 9 ){
   fwd <- spot * exp((r-d)*t.exp)
   
@@ -664,121 +683,49 @@ blksmd_spreadquick <- function( strk, spot, t.exp, vol, rho, r = 0, d = 0, n.qua
   return( exp(-r*t.exp)*price.fwd )
 }
 
-blksmd_barrier <- function( strk, spot, barrier, t.exp, vol, r = 0, d = 0, detail = FALSE ){
-  
-  n <- length(T)
-  fwd <- exp((r-d)*t.exp)*spot
-  
-  t.mat <- matrix(t.exp,n,n)
-  covar <- pmin(t.mat,t(t.mat))*(vol^2)
-  
-  var <- vol^2 * T
-  svd <- svd(covar)
-  svd$d <- sqrt(svd$d)
-  svd$u <- sign(sum(svd$u[,1])) * svd$u
-  svd$v <- NULL
-  
-  covar.sqrt <- svd$u %*% diag(svd$d) 
-  
-  n.quad <- rep(1,n)
-  n.quad[1:11] <- c(99, 11, 5, 3, 3, 3, 3, 3, 2, 1, 1)
-  #n.quad[1:13] <- c(99, 3, 3, 3, 3, 3, 3, 2, 2, 2, 2, 2, 2)
-  #n.quad[1:5] <- c(99,13,9,7,5)
-  mask <- ( n.quad >= 2 )
-  n.quad[1] <- NA
-  
-  fac1st <- covar.sqrt[,1]
-  facmat <- svd$u[,mask] %*% diag(svd$d[mask]) 
-  varN <- rowSums(facmat*facmat)
-  
-  idx <- 1:n
-  idx <- idx[mask]
-  
-  for (k in idx) {
-    if( k == 1L ) next
-    quadSt <- statmod::gauss.quad.prob(n.quad[k], dist='normal')
-    if(k==2L){
-      ww <- quadSt$weights
-      xx <- quadSt$nodes
-    } else {
-      xx_prev <- xx
-      xx <- numeric(0)
-      for (node in quadSt$nodes) {
-        xx <- cbind(xx,rbind(xx_prev,node))
-      }
-      ww <- as.vector(ww %o% quadSt$weights)
-    }
+
+#' An auxilirary function used in blksmd_spreadquick()
+#' The factor matrix with the first column ( x, -x )
+#' 
+#' @param covar
+#' @param A
+#' @param B
+#' @param C
+#' @param direction
+#' @return 2-by-2 factor matrix 
+blksmd_2by2_factormat <- function( covar = NA, A = NA, B = NA, C = NA, direction = -1 ) {
+  if( !is.na( covar )) {
+    A <- covar[1,1]
+    B <- covar[1,2]
+    C <- covar[2,2]
   }
   
-  dimnames(xx) <- list(NULL,NULL)
-  
-  fwd.mat <- fwd * exp( facmat %*% xx - 0.5*varN )
-  voln <- fac1st[n]
-  
-  price.fwd <- rep(NA,length(barrier))
-  
-  for (k in 1:length(barrier)){
-    call <- rep(0,length(ww))
-    for (j in 1:length(ww)){
-      roots <- root_barrier_down_out(fwd.mat[,j],fac1st,strk,barrier[k])
-      
-      if(anyNA(roots)) {
-        call[j] <- 0
-      } else {
-        #roots[2] <- Inf
-        call[j] <- fwd.mat[n,j]*exp(0.5*voln^2)*(pnorm(roots[2]-voln) - pnorm(roots[1]-voln)) - strk*(pnorm(roots[2]) - pnorm(roots[1]))
-      }
-    }
-    price.fwd[k] <- sum(call*ww)
+  det <- A*C-B*B
+  if( det<=0 ) {
+    stop( 'Matrix is not possitive definite, returning NA')
   }
   
-  call <- price.fwd * exp(-r*max(T))
-  call_euro <- blksmd_euro( strk, spot, T[n], sqrt(varN[n]/T[n]), r )
+  det.sqrt <- sqrt( det )
   
-  ret <- list(call=call, call_euro=call_euro)
+  #chol2 <- matrix( c(sqrt(A), B/sqrt(A), 0, sqrt(C-B*B/A)), ncol=2 )
+  #a <- sqrt(A*C-B*B)/sqrt(A*A+A*C+2*A*B)
+  #b <- (A+B)/sqrt(A*A+A*C+2*A*B)
+  #Q <- matrix( c(a,-b,b,a), ncol=2 )
   
-  if( detail ){
-    ret$dim <- c(n.quad[mask], prod(n.quad[mask], na.rm=TRUE))
-    ret$d1 <- svd$d[1]
-    ret$d <- svd$d[mask]/svd$d[1]
+  if( direction < 0 ) {
+    # the values in the first column have oppisite signs (for spread option)
+    cholV <- matrix( c(det.sqrt, -det.sqrt, 
+                       (A+B), (B+C) )/sqrt(A+2*B+C), ncol=2 )
+  } else {
+    # the values in the first column have same signs (for basket option)
+    cholV <- matrix( c(det.sqrt, det.sqrt, 
+                       (B-A), (C-B) )/sqrt(A-2*B+C), ncol=2 )
   }
-  return(ret)
+  
+  #validity check
+  if( sum( ( err <- c(A,B,B,C)-as.vector(cholV %*% t(cholV)) ) * err ) > 1e-12 ) {
+    stop('computed factor matrix can not reproduce the variance matrix. check the value')
+  }
+  
+  return( cholV )
 }
-
-blksmd_euro <- function( strk, spot, t.exp, vol, r = 0, d = 0 ){
-  
-  std <- vol*sqrt(T)
-  fwd <- spot * exp((r-d)*t.exp)
-  d_p <- log(fwd/strk)/std + 0.5*std
-  d_m <- d_p - std
-  call <- exp(-r*t.exp)*(fwd*pnorm(d_p)-strk*pnorm(d_m))
-  return(call)
-}
-
-root_barrier_up_out <- function(f,a,K,L) {
-  # Up & out option
-  #return the interval of x where f*exp(a[end]*x) >= K and max(f*exp(a*x)) <= L
-  
-  n <- length(f)
-  x1 <- log(K/f[n])/a[n]
-  #return( matrix(c(x1,Inf),2) )
-  
-  x2 <- min(log(L/f)/a)
-  
-  if(x1<x2)
-    return( matrix(c(x1,x2),2) )
-  else
-    return( NA )
-}
-
-root_barrier_down_out <- function(f,a,K,L) {
-  # Up & out option
-  #return the interval of x where f*exp(a[end]*x) >= K and max(f*exp(a*x)) <= L
-  
-  n <- length(f)
-  x1 <- log(K/f[n])/(a[n])
-  x2 <- max(log(L/f)/a)
-  
-  return( matrix(c(max(x1,x2),Inf),2) )
-}
-
