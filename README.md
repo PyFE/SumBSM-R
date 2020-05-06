@@ -11,6 +11,8 @@ Contrary to the common view that exact pricing is prohibitive owing to the curse
   * `blksmd_asian`: Asian options 
 * [SumBSM/Table_04.R](SumBSM/Table_04.R): Table 4. Parmeter set __S1__ (spread option)
 * [SumBSM/Table_05.R](SumBSM/Table_05.R): Table 5. Parmeter set __S2__ (spread option)
+* [SumBSM/Table_06_07_08.R](SumBSM/Table_06_07_08.R): Table 6~8. Parmeter set __B1__ (basket option)
+* [SumBSM/Table_09.R](SumBSM/Table_09.R): Table 9. Parmeter set __B2__ (basket option)
 * [SumBSM/Table_10.R](SumBSM/Table_10.R): Table 10. Parmeter set __A1__ (discretely monitored Asian option)
 * [SumBSM/Table_11.R](SumBSM/Table_11.R): Table 11. Parmeter set __A2__ (discretely monitored Asian option)
 * [SumBSM/Table_12.R](SumBSM/Table_12.R): Table 12. Parmeter set __A2__ (continuously monitored Asian option)
