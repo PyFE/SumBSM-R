@@ -9,8 +9,8 @@ Contrary to the common view that exact pricing is prohibitive owing to the curse
 * [SumBSM/blksmd.R](SumBSM/blksmd.R): Functions for pricing. Two main interface functions are 
   * `blksmd_basket`: basket or spread options
   * `blksmd_asian`: Asian options 
-* [SumBSM/Table_04.R](SumBSM/Table_10.R): Table 4. Parmeter set __S1__ (spread option)
-* [SumBSM/Table_05.R](SumBSM/Table_11.R): Table 5. Parmeter set __S2__ (spread option)
+* [SumBSM/Table_04.R](SumBSM/Table_04.R): Table 4. Parmeter set __S1__ (spread option)
+* [SumBSM/Table_05.R](SumBSM/Table_05.R): Table 5. Parmeter set __S2__ (spread option)
 * [SumBSM/Table_10.R](SumBSM/Table_10.R): Table 10. Parmeter set __A1__ (discretely monitored Asian option)
 * [SumBSM/Table_11.R](SumBSM/Table_11.R): Table 11. Parmeter set __A2__ (discretely monitored Asian option)
 * [SumBSM/Table_12.R](SumBSM/Table_12.R): Table 12. Parmeter set __A2__ (continuously monitored Asian option)
