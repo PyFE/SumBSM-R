@@ -15,7 +15,7 @@ Contrary to the common view that exact pricing is prohibitive owing to the curse
 * [SumBSM/Table_09.R](SumBSM/Table_09.R): Table 9. Parmeter set __B2__ (basket option)
 * [SumBSM/Table_10.R](SumBSM/Table_10.R): Table 10. Parmeter set __A1__ (discretely monitored Asian option)
 * [SumBSM/Table_11.R](SumBSM/Table_11.R): Table 11. Parmeter set __A2__ (discretely monitored Asian option)
-* [SumBSM/Table_12.R](SumBSM/Table_12.R): Table 12. Parmeter set __A2__ (continuously monitored Asian option)
+* [SumBSM/Table_12.R](SumBSM/Table_12.R): Table 12. Parmeter set __A3__ (continuously monitored Asian option)
 
 ## Reference
 * __Choi, J.__ (2018). Sum of all Black-Scholes-Merton models: An efficient pricing method for spread, basket, and Asian options. *Journal of Futures Markets*, 38(6), 627–644. [ [DOI](https://doi.org/10.1002/fut.21909) | [SSRN](http://ssrn.com/abstract=2913048) | [arXiv](http://arxiv.org/abs/1805.03172) ]
