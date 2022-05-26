@@ -200,7 +200,7 @@ blksmd_basket <- function( strk, spot, t.exp, vol, wts=1/length(vol), corr = 0,
     if( CV ) {
       delta <- as.vector( ( fwd.mat * pnorm(outer(fac1st, -roots, "+")) ) %*% ww )  # Delta_k * F_k
       if(!callput) {
-        delta <- delta - 1
+        delta <- delta - fwd.wts
       }
       price.fwd[k] <- price.fwd[k] - sum(delta * f_k.err)
     }
@@ -327,7 +327,7 @@ blksmd_asian <- function( strk, spot, t.obs, vol, wts=1/length(t.obs), r = 0, d 
     if(CV) {
       delta <- as.vector( ( fwd.mat * pnorm(outer(fac1st, -roots, "+")) ) %*% ww )  # Delta_k * F_k
       if(!callput) {
-        delta <- delta - 1
+        delta <- delta - fwd.wts
       }
       price.fwd[k] <- price.fwd[k] - sum(delta * f_k.err)
     }
